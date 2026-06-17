@@ -1,0 +1,11 @@
+{
+  "week": "w25",
+  "schema_version": "ifeed-weekly-publish-v1",
+  "issue": {
+    "title": "iFeed Weekly Signals W25",
+    "date": "2026-06-22",
+    "coverage": "15-21 June 2026",
+    "theme": ""
+  },
+  "signals": []
+}

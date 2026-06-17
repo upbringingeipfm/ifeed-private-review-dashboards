@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iFeed Signal Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(95.5% 0.010 230);
+      --surface: oklch(98% 0.006 230);
+      --surface-2: oklch(94% 0.010 230);
+      --rule: oklch(80% 0.018 230);
+      --ink: oklch(20% 0.030 250);
+      --muted: oklch(47% 0.020 250);
+      --accent: oklch(48% 0.100 200);
+      --accent-bg: oklch(92.5% 0.030 200);
+      --dark: oklch(24% 0.045 220);
+      --shadow: 0 18px 48px oklch(20% 0.03 250 / 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 78% 6%, oklch(90% 0.025 205), transparent 32rem),
+        linear-gradient(180deg, var(--bg), oklch(97% 0.006 230));
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .shell { width: min(1380px, calc(100vw - 32px)); margin: 20px auto 56px; }
+    header {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border: 1.5px solid color-mix(in srgb, var(--accent) 26%, var(--rule));
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+    a { color: inherit; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-family: "Source Serif 4", serif;
+      font-weight: 700;
+      font-size: 21px;
+    }
+    .wordmark {
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: 27px;
+      line-height: 1;
+    }
+    .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    select, button, input {
+      min-height: 38px;
+      border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--rule));
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      font: 700 12px/1 "JetBrains Mono", monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 0 12px;
+    }
+    button { cursor: pointer; }
+    button.primary { background: var(--dark); color: white; border-color: var(--dark); }
+    .hero {
+      margin: 46px 0 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+      gap: 22px;
+      align-items: end;
+    }
+    h1 {
+      margin: 0;
+      font-family: "Source Serif 4", serif;
+      font-size: clamp(38px, 5vw, 70px);
+      line-height: .95;
+      letter-spacing: 0;
+    }
+    h1 em { color: var(--accent); font-style: italic; font-weight: 500; }
+    .hero p { color: var(--muted); font-size: 17px; line-height: 1.55; margin: 16px 0 0; max-width: 760px; }
+    .status {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .metric {
+      min-height: 92px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--rule);
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+    }
+    .metric b {
+      display: block;
+      color: var(--accent);
+      font: 700 11px/1 "JetBrains Mono", monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .metric span { font-family: "Source Serif 4", serif; font-size: 28px; font-weight: 700; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      box-shadow: 0 10px 30px oklch(20% 0.03 250 / 0.07);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--rule);
+      background: color-mix(in srgb, var(--surface-2) 70%, white);
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-family: "Source Serif 4", serif;
+      font-size: 26px;
+      line-height: 1.05;
+    }
+    .panel-head p { color: var(--muted); margin: 8px 0 0; font-size: 13px; line-height: 1.45; }
+    .panel-body { padding: 16px; }
+    .steps { display: grid; gap: 8px; }
+    .step {
+      width: 100%;
+      text-align: left;
+      min-height: 60px;
+      border-radius: 14px;
+      text-transform: none;
+      letter-spacing: 0;
+      font: 600 14px/1.25 Inter, sans-serif;
+      background: var(--surface);
+    }
+    .step small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent);
+      font: 700 10px/1 "JetBrains Mono", monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .step.active { border-color: var(--accent); background: var(--accent-bg); }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      resize: vertical;
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 16px;
+      color: var(--ink);
+      background: white;
+      font: 500 14px/1.55 Inter, sans-serif;
+    }
+    .prompt {
+      white-space: pre-wrap;
+      min-height: 420px;
+      max-height: 62vh;
+      overflow: auto;
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 16px;
+      background: white;
+      color: var(--ink);
+      font: 500 14px/1.55 Inter, sans-serif;
+    }
+    .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .schema {
+      display: grid;
+      gap: 10px;
+    }
+    .schema-card {
+      padding: 14px;
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--rule));
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface-2) 72%, white);
+    }
+    .schema-card b {
+      display: block;
+      color: var(--accent);
+      font: 700 11px/1 "JetBrains Mono", monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .schema-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .mini {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 10px;
+    }
+    @media (max-width: 1100px) {
+      .hero, .layout { grid-template-columns: 1fr; }
+      .status { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 18px, 620px); margin-top: 8px; }
+      header { position: static; }
+      .controls, .status { grid-template-columns: 1fr; width: 100%; }
+      select, button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a class="brand" href="/">
+        <div class="mark">i</div>
+        <div class="wordmark">iFeed</div>
+      </a>
+      <div class="controls">
+        <select id="weekSelect" aria-label="Week">
+          <option value="w25">W25 · 2026-06-15 to 2026-06-21</option>
+        </select>
+        <select id="toolSelect" aria-label="Tool">
+          <option value="codex">Codex</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="claude">Claude</option>
+          <option value="perplexity">Perplexity</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="gemini">Gemini</option>
+          <option value="miscellaneous">Miscellaneous</option>
+        </select>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Weekly signal <em>management system.</em></h1>
+        <p>Select the week and tool, copy the prompt, paste the tool output, then export raw Markdown or structured JSON for refinement, dashboard, cockpit and final publish handoff.</p>
+      </div>
+      <div class="status">
+        <div class="metric"><b>Week</b><span id="metricWeek">W25</span></div>
+        <div class="metric"><b>Tool lanes</b><span>7</span></div>
+        <div class="metric"><b>Stages</b><span>6</span></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>Workflow</h2>
+          <p>Use this in order. Codex can automate the middle stages; without Codex, copy the fallback prompts into ChatGPT.</p>
+        </div>
+        <div class="panel-body">
+          <div class="steps">
+            <button class="step active" data-mode="prompt"><small>01</small>Prompt canvas</button>
+            <button class="step" data-mode="raw"><small>02</small>Raw capture workspace</button>
+            <button class="step" data-mode="refine"><small>03</small>Refinement prompt</button>
+            <button class="step" data-mode="select"><small>04</small>Select 20 / final 9 prompt</button>
+            <button class="step" data-mode="cockpit"><small>05</small>Cockpit handoff prompt</button>
+            <button class="step" data-mode="publish"><small>06</small>Publish database prompt</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="mainTitle">Prompt canvas</h2>
+          <p id="mainHelp">Copy this prompt into the selected tool. The prompt stays mostly constant; only week dates and editorial priorities change.</p>
+        </div>
+        <div class="panel-body">
+          <div id="promptView" class="prompt"></div>
+          <textarea id="rawInput" hidden placeholder="Paste raw tool output here..."></textarea>
+          <div class="action-row">
+            <button class="primary" id="copyBtn">Copy current text</button>
+            <button id="saveBtn">Save in browser</button>
+            <button id="downloadMdBtn">Download raw MD</button>
+            <button id="downloadJsonBtn">Download stage JSON</button>
+          </div>
+          <p class="mini" id="storageNote">Browser save uses localStorage on this device. For permanent project history, download and commit the files, or let Codex write them into the W25 folder.</p>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>Database map</h2>
+          <p>The files below are the stable source-of-truth layers. Raw can be messy; everything after refinement must be structured.</p>
+        </div>
+        <div class="panel-body">
+          <div class="schema">
+            <div class="schema-card"><b>Raw capture</b><p><code>/weeks/w25/raw/{tool}_output.md</code><br>Human-pasted output from each tool.</p></div>
+            <div class="schema-card"><b>Refined register</b><p><code>refined-signals.json</code><br>Deduped candidate signals with date, source, claim, domain, confidence and source posture.</p></div>
+            <div class="schema-card"><b>Dashboard data</b><p><code>dashboard-signals.json</code><br>Expanded cards, decision tags, filters, audit notes and private review fields.</p></div>
+            <div class="schema-card"><b>Cockpit handoff</b><p><code>cockpit-handoff.json</code><br>Preliminary 20, final 9 candidates, watch, drop and reasoning.</p></div>
+            <div class="schema-card"><b>Publish data</b><p><code>publish-signals.json</code><br>Only final public-safe signals, copy blocks, source URLs, visual card content and claim boundaries.</p></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const week = {
+      id: "w25",
+      start: "2026-06-15",
+      end: "2026-06-21",
+      publishDate: "2026-06-22"
+    };
+
+    const toolProfiles = {
+      codex: "Use Codex for repository-aware synthesis, local file creation, source verification, dashboard generation, and publish handoff.",
+      chatgpt: "Use ChatGPT for broad scan, synthesis, fallback refinement, and selection reasoning when Codex is unavailable.",
+      claude: "Use Claude for long-context synthesis, editorial judgment, source-risk language, and narrative framing.",
+      perplexity: "Use Perplexity for web/source discovery with citations and exact date checking. Prefer primary and near-primary sources.",
+      deepseek: "Use DeepSeek for alternate broad scanning, technical/regulatory pattern extraction, and missed-signal discovery.",
+      gemini: "Use Gemini for Google/web ecosystem scanning, cross-domain research, and secondary source discovery.",
+      miscellaneous: "Use this lane for newsletters, LinkedIn experts, company posts, regulator pages, journals, podcasts, and manual finds."
+    };
+
+    const baseLens = `Seven-layer scan lens:
+1. Domain: bioanalytical, bioequivalence, clinical trials, clinical evidence, medtech, diagnostics, digital health, healthcare delivery.
+2. Domain lenses: technical, operations, regulatory, market/access, evidence, quality, compliance.
+3. Functional areas: pharma, medtech, healthcare, life sciences.
+4. Ecosystem area: academic, research, industry, business, policy, investment.
+5. Governance: quality, QMS, systems, compliance, ethics, regulations, data protection, inspection readiness.
+6. AI adoption: AI advancement, AI automation, workflows, systems, validation, governance, model dependency.
+7. OER outward expression routing: connections, content, services, platforms, community, public positioning.`;
+
+    function capturePrompt(tool) {
+      return `You are helping prepare iFeed Weekly Signals ${week.id.toUpperCase()} for ${week.start} to ${week.end}.
+
+Tool role: ${tool.toUpperCase()}
+${toolProfiles[tool]}
+
+Objective:
+Find source-backed signals that matter to healthcare operators, QMS/quality leaders, regulatory/evidence teams, clinical/AI teams, medtech, pharma, life-sciences strategy and market-access decision-makers.
+
+Do not optimize for volume at the final stage. At this capture stage, scan broadly and do not prematurely limit useful signals. Separate globally important items from Ireland/India ecosystem items unless globally relevant.
+
+${baseLens}
+
+Editorial test:
+- Is it decision-relevant?
+- Does it change how a team should think, act, govern, validate, inspect, fund, plan evidence, or deploy AI?
+- Is it source-backed with date clarity?
+- Is it a real shift, not noise?
+- Does it support the theme that healthcare intelligence is becoming operating infrastructure?
+
+Search scope:
+- Regulators: FDA, EMA, HMA, MHRA, NICE, CMS, TGA, Health Canada, WHO, ICH, PIC/S, EU Commission, Notified Bodies where relevant.
+- AI: clinical AI, healthcare AI, biopharma AI, drug-discovery AI, agentic AI, AI governance, model dependency, AI validation.
+- QMS/quality: ISO 13485, FDA QMSR, CAPA, supplier quality, management review, internal audit, GMP/GCP/PV, data integrity, validation.
+- Evidence/access: HTA, RWE, reimbursement, clinical trials, registries, market access.
+- Ecosystem: launches, partnerships, funding, research, journals, expert newsletters, credible LinkedIn expert signals.
+
+Return raw candidate signals with:
+Title | Date | Source URL | Source type | Domain | One-sentence fact | Why it matters | Suggested placement | Confidence 1-5 | Notes on verification risk.
+
+Flag duplicates, late-May/older foundational items, and any item that needs careful claim-boundary language.`;
+    }
+
+    const fallbackPrompts = {
+      refine: `You are the fallback refinement engine for iFeed Weekly Signals ${week.id.toUpperCase()}.
+
+I will paste raw outputs from one or more tools. Convert them into a structured refined signal register. Do not invent sources or dates. If a source/date is unclear, mark verification_status as "needs verification".
+
+Output valid JSON only:
+{
+  "week": "${week.id}",
+  "schema_version": "ifeed-refined-signals-v1",
+  "signals": [
+    {
+      "id": "w25-r001",
+      "title": "",
+      "date": "YYYY-MM-DD",
+      "source_url": "",
+      "source_type": "primary | near-primary | high-quality-secondary | secondary | unclear",
+      "origin_tools": [],
+      "domain": [],
+      "seven_layer_tags": {
+        "domain": [],
+        "domain_lens": [],
+        "functional_area": [],
+        "ecosystem_area": [],
+        "governance": [],
+        "ai_adoption": [],
+        "oer": []
+      },
+      "fact": "",
+      "decision_relevance": "",
+      "source_posture": "",
+      "verification_status": "verified | needs verification | weak",
+      "duplicate_of": "",
+      "prior_coverage": "",
+      "suggested_placement": "selected_candidate | alternative | watch | context | ireland_india | drop",
+      "confidence": 1
+    }
+  ]
+}`,
+      select: `You are the strict iFeed W25 editor. From the refined signal register, select the preliminary best 20 and recommend a final 9 candidate set.
+
+Judge by:
+1. Decision relevance for healthcare/life-sciences operators.
+2. Source strength and date fit.
+3. Novelty versus prior weeks.
+4. Operational consequence.
+5. Fit with healthcare intelligence as operating infrastructure.
+6. Public safety: avoid overclaim, hype, reputational risk, weak secondary claims.
+
+Return JSON:
+{
+  "week": "${week.id}",
+  "preliminary_20": [{"signal_id": "", "rank": 1, "why": "", "risk": ""}],
+  "final_9_candidates": [{"signal_id": "", "slot": 1, "story_angle": "", "why_this_delivers_value": "", "claim_boundary": ""}],
+  "watch": [],
+  "drop": []
+}`,
+      cockpit: `Convert the selected W25 refined register into a cockpit-friendly database.
+
+For every signal include:
+id, title, date, source_url, domain_group, reader_group, decision_status, source_audit, evidence_posture, why_it_matters, editorial_use, duplicate/prior coverage, confidence, and notes.
+
+Return valid JSON using schema_version "ifeed-cockpit-handoff-v1".`,
+      publish: `Create the W25 public iFeed Weekly Signals publish database from the final 9.
+
+Rules:
+- No overclaiming.
+- Use careful source language.
+- Make every signal a useful story, not random news.
+- Each signal needs: headline, short story, what happened, why it matters, claim boundary, Monday move, source label, source URL, date, right-side visual card content, and screenshot-safe expanded card text.
+- Separate private review reasoning from public copy.
+
+Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
+    };
+
+    const modeMeta = {
+      prompt: ["Prompt canvas", "Copy this prompt into the selected tool. The prompt stays mostly constant; only week dates and editorial priorities change."],
+      raw: ["Raw capture workspace", "Paste the selected tool output here. Save in browser for temporary work, then download Markdown for the W25 raw folder."],
+      refine: ["Refinement prompt", "Use this if Codex is unavailable. Paste raw tool files into ChatGPT and ask it to return the refined signal JSON."],
+      select: ["Select 20 / final 9 prompt", "Use this to choose preliminary 20 and final 9 candidates from the refined register."],
+      cockpit: ["Cockpit handoff prompt", "Use this to convert refined and selected signals into the weekly cockpit database."],
+      publish: ["Publish database prompt", "Use this to generate the final public iFeed Weekly Signals database for the digest template."]
+    };
+
+    const toolSelect = document.getElementById("toolSelect");
+    const promptView = document.getElementById("promptView");
+    const rawInput = document.getElementById("rawInput");
+    const mainTitle = document.getElementById("mainTitle");
+    const mainHelp = document.getElementById("mainHelp");
+    const copyBtn = document.getElementById("copyBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const downloadMdBtn = document.getElementById("downloadMdBtn");
+    const downloadJsonBtn = document.getElementById("downloadJsonBtn");
+    let mode = "prompt";
+
+    function currentText() {
+      if (mode === "prompt") return capturePrompt(toolSelect.value);
+      if (mode === "raw") return rawInput.value;
+      return fallbackPrompts[mode];
+    }
+
+    function render() {
+      const [title, help] = modeMeta[mode];
+      mainTitle.textContent = title;
+      mainHelp.textContent = help;
+      document.querySelectorAll(".step").forEach(btn => btn.classList.toggle("active", btn.dataset.mode === mode));
+      rawInput.hidden = mode !== "raw";
+      promptView.hidden = mode === "raw";
+      promptView.textContent = mode === "prompt" ? capturePrompt(toolSelect.value) : fallbackPrompts[mode];
+      const saved = localStorage.getItem(`ifeed.${week.id}.${toolSelect.value}.raw`);
+      if (mode === "raw" && !rawInput.value && saved) rawInput.value = saved;
+    }
+
+    function download(filename, content, type = "text/plain") {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.querySelectorAll(".step").forEach(btn => {
+      btn.addEventListener("click", () => {
+        mode = btn.dataset.mode;
+        render();
+      });
+    });
+
+    toolSelect.addEventListener("change", () => {
+      rawInput.value = localStorage.getItem(`ifeed.${week.id}.${toolSelect.value}.raw`) || "";
+      render();
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(currentText());
+      copyBtn.textContent = "Copied";
+      setTimeout(() => copyBtn.textContent = "Copy current text", 1200);
+    });
+
+    saveBtn.addEventListener("click", () => {
+      if (mode === "raw") localStorage.setItem(`ifeed.${week.id}.${toolSelect.value}.raw`, rawInput.value);
+      saveBtn.textContent = "Saved";
+      setTimeout(() => saveBtn.textContent = "Save in browser", 1200);
+    });
+
+    downloadMdBtn.addEventListener("click", () => {
+      const tool = toolSelect.value;
+      const body = mode === "raw" ? rawInput.value : currentText();
+      download(`${tool}_output.md`, `# ${week.id.toUpperCase()} ${tool} output\\n\\n${body}\\n`);
+    });
+
+    downloadJsonBtn.addEventListener("click", () => {
+      const tool = toolSelect.value;
+      const payload = {
+        week: week.id,
+        stage: mode,
+        tool,
+        exported_at: new Date().toISOString(),
+        content: currentText()
+      };
+      download(`${week.id}_${mode}_${tool}.json`, JSON.stringify(payload, null, 2), "application/json");
+    });
+
+    render();
+  </script>
+</body>
+</html>

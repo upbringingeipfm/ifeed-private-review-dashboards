@@ -1,0 +1,33 @@
+{
+  "week": "w25",
+  "coverage_start": "2026-06-15",
+  "coverage_end": "2026-06-21",
+  "status": "capture",
+  "public_issue_slug": "2026-06-22_weekly-w25",
+  "tool_lanes": [
+    "codex",
+    "chatgpt",
+    "claude",
+    "perplexity",
+    "deepseek",
+    "gemini",
+    "miscellaneous"
+  ],
+  "fixed_lenses": [
+    "domain",
+    "domain_lens",
+    "functional_area",
+    "ecosystem_area",
+    "governance",
+    "ai_adoption",
+    "outward_expression_routing"
+  ],
+  "pipeline": [
+    "prompt_capture",
+    "raw_capture",
+    "refined_signal_register",
+    "private_week_dashboard",
+    "weekly_cockpit_handoff",
+    "final_digest_publish_database"
+  ]
+}
