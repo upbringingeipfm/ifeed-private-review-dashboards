@@ -177,6 +177,14 @@
       font-size: 12px;
       line-height: 1.6;
     }
+    .section-title {
+      margin: 42px 0 0;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
     @media (max-width: 880px) {
       .shell { width: min(100% - 20px, 680px); margin-top: 10px; }
       header { border-radius: 22px; }
@@ -201,6 +209,15 @@
     </section>
 
     <section class="grid" aria-label="Weekly dashboards">
+      <a class="card" href="/workflow/">
+        <div>
+          <div class="meta"><span>Operating model</span><span class="tag">Workflow</span></div>
+          <h2>Weekly Signal Workflow</h2>
+          <p>The end-to-end system: prompts, raw capture, Obsidian files, cockpit refinement, final digest, CMS roles, fallback modes and governance.</p>
+        </div>
+        <div class="meta"><span>Open workflow</span></div>
+      </a>
+
       <a class="card" href="/weeks/w24/">
         <div>
           <div class="meta"><span>2026-06-08 to 2026-06-13</span><span class="tag">W24</span></div>
@@ -218,6 +235,11 @@
         </div>
         <div class="meta"><span>Ready to add</span></div>
       </article>
+    </section>
+
+    <div class="section-title">Weekly dashboard archive</div>
+
+    <section class="grid" aria-label="Future dashboard slots">
 
       <article class="card soon">
         <div>

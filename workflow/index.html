@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iFeed Weekly Signal Workflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(95.5% 0.010 230);
+      --surface: oklch(98% 0.006 230);
+      --surface-2: oklch(94% 0.010 230);
+      --rule: oklch(80% 0.018 230);
+      --ink: oklch(20% 0.030 250);
+      --muted: oklch(47% 0.020 250);
+      --accent: oklch(48% 0.100 200);
+      --accent-bg: oklch(92.5% 0.030 200);
+      --warn: oklch(61% 0.15 70);
+      --shadow: 0 18px 48px oklch(20% 0.03 250 / 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 78% 6%, oklch(90% 0.025 205), transparent 32rem),
+        linear-gradient(180deg, var(--bg), oklch(97% 0.006 230));
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .shell { width: min(1240px, calc(100vw - 40px)); margin: 28px auto 64px; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border: 1.5px solid color-mix(in srgb, var(--accent) 26%, var(--rule));
+      border-radius: 28px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: var(--shadow);
+      padding: 18px 22px;
+    }
+    a { color: inherit; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; text-decoration: none; }
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-family: "Source Serif 4", serif;
+      font-weight: 700;
+      font-size: 22px;
+    }
+    .wordmark {
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .pill {
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--rule));
+      border-radius: 999px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      white-space: nowrap;
+    }
+    .hero { margin: 58px 0 32px; max-width: 980px; }
+    h1 {
+      margin: 0;
+      font-family: "Source Serif 4", serif;
+      font-size: clamp(38px, 6vw, 76px);
+      line-height: .95;
+      letter-spacing: 0;
+    }
+    h1 em { color: var(--accent); font-style: italic; font-weight: 500; }
+    .hero p {
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+      margin: 18px 0 0;
+    }
+    .map {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin: 30px 0 36px;
+    }
+    .step {
+      min-height: 132px;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1.5px solid color-mix(in srgb, var(--accent) 28%, var(--rule));
+      box-shadow: 0 8px 22px oklch(20% 0.03 250 / 0.06);
+    }
+    .step b {
+      display: block;
+      font-family: "JetBrains Mono", monospace;
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .step span { display: block; font-family: "Source Serif 4", serif; font-size: 22px; line-height: 1.05; }
+    .section {
+      margin-top: 24px;
+      padding: 24px;
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: 0 8px 26px oklch(20% 0.03 250 / 0.06);
+    }
+    .section h2 {
+      margin: 0 0 18px;
+      font-family: "Source Serif 4", serif;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1;
+    }
+    .section h3 {
+      margin: 0 0 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .wide { grid-column: 1 / -1; }
+    .box {
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--rule));
+      background: color-mix(in srgb, var(--surface-2) 72%, white);
+      min-height: 150px;
+    }
+    .box strong {
+      display: block;
+      font-family: "Source Serif 4", serif;
+      font-size: 22px;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+    .box p, .box li {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .box p { margin: 0; }
+    ul { margin: 0; padding-left: 18px; }
+    li + li { margin-top: 7px; }
+    code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: .92em;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 1px 5px;
+    }
+    .callout {
+      border-color: color-mix(in srgb, var(--warn) 36%, var(--rule));
+      background: color-mix(in srgb, oklch(96% 0.04 80) 42%, var(--surface));
+    }
+    .footer-note {
+      margin-top: 28px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    @media (max-width: 980px) {
+      .shell { width: min(100% - 20px, 720px); margin-top: 10px; }
+      header { border-radius: 22px; }
+      .map, .grid, .two { grid-template-columns: 1fr; }
+      .hero { margin-top: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a class="brand" href="/">
+        <div class="mark">i</div>
+        <div class="wordmark">iFeed</div>
+      </a>
+      <div class="pill">Workflow OS</div>
+    </header>
+
+    <section class="hero">
+      <h1>From raw signals to <em>publishable intelligence.</em></h1>
+      <p>This workflow defines how weekly research moves from tool prompts and pasted outputs into Obsidian notes, a raw-signal dashboard, the signal cockpit, and finally the public iFeed Weekly Signals issue.</p>
+    </section>
+
+    <section class="map" aria-label="Workflow map">
+      <div class="step"><b>01 Capture</b><span>Tool prompts and source scans</span></div>
+      <div class="step"><b>02 Raw Notes</b><span>Paste outputs into week files</span></div>
+      <div class="step"><b>03 Normalize</b><span>Deduplicate and source-check</span></div>
+      <div class="step"><b>04 Cockpit</b><span>Review all signals and shortlist</span></div>
+      <div class="step"><b>05 Digest</b><span>Write the final nine stories</span></div>
+      <div class="step"><b>06 Publish</b><span>GitHub to Netlify deployment</span></div>
+    </section>
+
+    <section class="section">
+      <h2>1. Signal Capture</h2>
+      <div class="grid">
+        <div class="box">
+          <strong>Tool-specific prompts</strong>
+          <p>Maintain fixed prompts for Codex, ChatGPT, Claude, Perplexity, DeepSeek and Gemini, plus one miscellaneous prompt for newsletters, LinkedIn experts, regulators, companies and manual finds.</p>
+        </div>
+        <div class="box">
+          <strong>Seven-layer lens</strong>
+          <p>Every scan should consider domain, domain lenses, functional areas, ecosystem area, governance, AI adoption and outward expression routing.</p>
+        </div>
+        <div class="box">
+          <strong>No early signal limit</strong>
+          <p>Capture broadly first. Selection happens later. The raw layer is for awareness, blind-spot reduction and future traceability.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Raw Signal Workspace</h2>
+      <div class="grid two">
+        <div class="box">
+          <strong>Obsidian/local Markdown files</strong>
+          <ul>
+            <li><code>w25/chatgpt_output.md</code></li>
+            <li><code>w25/claude_output.md</code></li>
+            <li><code>w25/codex_output.md</code></li>
+            <li><code>w25/perplexity_output.md</code></li>
+            <li><code>w25/deepseek_output.md</code></li>
+            <li><code>w25/gemini_output.md</code></li>
+            <li><code>w25/miscellaneous_output.md</code></li>
+          </ul>
+        </div>
+        <div class="box">
+          <strong>How it connects</strong>
+          <p>The Markdown files are the capture ledger. Codex can parse them into a structured JSON corpus when available. Without Codex, the same files can be pasted into ChatGPT, Claude or Gemini for normalization using the same schema.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. Refinement Into Weekly Dashboard</h2>
+      <div class="grid">
+        <div class="box">
+          <strong>Normalize</strong>
+          <p>Convert pasted outputs into one candidate register with title, date, source URL, domain, source type, tool origin, claim, relevance and confidence.</p>
+        </div>
+        <div class="box">
+          <strong>Verify</strong>
+          <p>Check exact date, primary source, source-owner language, duplicate status, prior W19-W23 coverage and risk of overclaim.</p>
+        </div>
+        <div class="box">
+          <strong>Dashboard</strong>
+          <p>Render every raw signal into a private review dashboard with filters, expanded cards, source audit, editorial action and selection controls.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. Cockpit to iFeed Weekly Signals</h2>
+      <div class="grid two">
+        <div class="box">
+          <strong>Signal cockpit</strong>
+          <p>The cockpit is the editorial decision room. It holds all raw signals, identifies the best 15-20, marks duplicates/context/drop items and preserves awareness signals that are not published.</p>
+        </div>
+        <div class="box">
+          <strong>Weekly digest</strong>
+          <p>The public iFeed issue only imports the final nine. Each signal becomes a story with claim boundary, source posture, why it matters, Monday move and visual card logic.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. Operating Without Codex</h2>
+      <div class="grid">
+        <div class="box">
+          <strong>ChatGPT fallback</strong>
+          <p>Paste the Markdown capture files and ask for normalization to the fixed JSON schema. Use smaller batches if subscription/context is limited.</p>
+        </div>
+        <div class="box">
+          <strong>No-subscription mode</strong>
+          <p>Use one tool at a time, preserve raw Markdown, and ask only for narrow tasks: dedupe this batch, verify these ten sources, or score these signals.</p>
+        </div>
+        <div class="box">
+          <strong>Mobile mode</strong>
+          <p>Capture links and notes into Obsidian, Notes, Google Docs or GitHub web editor. Full normalization can wait until laptop access.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. CMS Boundaries</h2>
+      <div class="grid two">
+        <div class="box">
+          <strong>Fixed framework</strong>
+          <ul>
+            <li>Weekly folders and naming</li>
+            <li>Prompt library</li>
+            <li>Signal schema</li>
+            <li>Selection rubric</li>
+            <li>Source and claim policy</li>
+            <li>Digest card template</li>
+            <li>Netlify/GitHub deployment route</li>
+          </ul>
+        </div>
+        <div class="box">
+          <strong>Incremental database</strong>
+          <ul>
+            <li>Raw signal corpus</li>
+            <li>Source ledger</li>
+            <li>Preliminary 20</li>
+            <li>Final 9 handoff</li>
+            <li>Prior coverage map</li>
+            <li>Reader lanes and domains</li>
+            <li>Rejected/noise archive</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. Sustainability Rules</h2>
+      <div class="grid">
+        <div class="box callout">
+          <strong>Never overwrite working projects</strong>
+          <p>Private review dashboards, signal cockpit and public weeklysignals stay as separate GitHub/Netlify projects.</p>
+        </div>
+        <div class="box callout">
+          <strong>Data before design</strong>
+          <p>Verify sources, claims and placement before producing visual cards or public writing.</p>
+        </div>
+        <div class="box callout">
+          <strong>Every week is reproducible</strong>
+          <p>A new week should be created by copying the week template, adding raw capture files, rendering a dashboard, selecting final nine and committing to GitHub.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>8. What Still Needs To Be Built</h2>
+      <div class="grid two">
+        <div class="box">
+          <strong>Automation layer</strong>
+          <p>A parser that reads the seven Markdown capture files, deduplicates signals and generates the weekly dashboard JSON automatically.</p>
+        </div>
+        <div class="box">
+          <strong>Handoff bridge</strong>
+          <p>An export/import file that moves final nine signals from the private cockpit into the public iFeed Weekly Signals CMS without copy-paste drift.</p>
+        </div>
+        <div class="box">
+          <strong>Admin console</strong>
+          <p>A simple interface for adding a new week, pasting raw outputs, editing source fields, choosing preliminary 20 and final nine, then exporting deploy-ready files.</p>
+        </div>
+        <div class="box">
+          <strong>QA gate</strong>
+          <p>A checklist that blocks publish if source URLs, date windows, claim boundaries, duplicate checks, mobile view or prior-week coverage are incomplete.</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Recommended long-term source of truth: GitHub repo + Markdown capture files + structured JSON corpus. Obsidian is the human writing layer; GitHub is the deployment and history layer.</p>
+  </main>
+</body>
+</html>
