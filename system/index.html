@@ -6,7 +6,7 @@
   <title>iFeed Signal Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500;1,6..72,600&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: oklch(95.5% 0.010 230);
@@ -48,26 +48,47 @@
       backdrop-filter: blur(14px);
     }
     a { color: inherit; }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .mark {
-      display: grid;
-      place-items: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: var(--accent-bg);
-      color: var(--accent);
-      font-family: "Source Serif 4", serif;
-      font-weight: 700;
-      font-size: 21px;
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nn11 { display: inline-block; width: 72px; line-height: 0; flex-shrink: 0; }
+    .nn11 svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .nn11 svg .nerve {
+      stroke: var(--muted);
+      stroke-width: 1;
+      stroke-linecap: round;
+      fill: none;
+      opacity: .62;
     }
-    .wordmark {
-      font-family: "Source Serif 4", serif;
+    .nn11 svg .neuron-in,
+    .nn11 svg .neuron-out { fill: var(--accent); }
+    .nn11 svg .neuron-mid { fill: var(--ink); opacity: .95; }
+    .nn11 svg .halo-ring {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      opacity: .88;
+    }
+    @keyframes nn11HaloPulse {
+      0%, 100% { opacity: .52; transform: scale(1); }
+      50% { opacity: .98; transform: scale(1.13); }
+    }
+    .nn11 svg .halo-a,
+    .nn11 svg .halo-b {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: nn11HaloPulse 3.2s ease-in-out infinite;
+    }
+    .nn11 svg .halo-b { animation-delay: 1.6s; }
+    .if-mark {
+      font-family: "Newsreader", serif;
+      font-weight: 500;
       font-style: italic;
-      font-weight: 700;
-      font-size: 27px;
+      letter-spacing: -0.02em;
       line-height: 1;
+      font-size: 36px;
+      color: var(--ink);
+      display: inline-block;
     }
+    .if-mark .i { color: var(--accent); }
     .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
     select, button, input {
       min-height: 38px;
@@ -85,9 +106,9 @@
     .hero {
       margin: 46px 0 24px;
       display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+      grid-template-columns: minmax(0, 1fr) minmax(360px, .82fr);
       gap: 22px;
-      align-items: end;
+      align-items: stretch;
     }
     h1 {
       margin: 0;
@@ -98,6 +119,112 @@
     }
     h1 em { color: var(--accent); font-style: italic; font-weight: 500; }
     .hero p { color: var(--muted); font-size: 17px; line-height: 1.55; margin: 16px 0 0; max-width: 760px; }
+    .hero-copy {
+      display: grid;
+      align-content: end;
+    }
+    .hero-copy .status { margin-top: 22px; }
+    .network-panel {
+      position: relative;
+      min-height: 330px;
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1.5px solid color-mix(in srgb, var(--accent) 24%, var(--rule));
+      background:
+        radial-gradient(circle at 72% 18%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 17rem),
+        linear-gradient(135deg, oklch(21% 0.045 220), oklch(33% 0.085 205));
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+        0 24px 54px -36px color-mix(in srgb, var(--accent) 58%, transparent),
+        var(--shadow);
+    }
+    .network-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 16%, oklch(84% 0.09 205 / .13), transparent 18rem),
+        linear-gradient(180deg, transparent, oklch(12% 0.03 220 / .16));
+    }
+    .hero-network {
+      position: absolute;
+      inset: 5% 2% 3% 1%;
+      width: 98%;
+      height: 92%;
+      overflow: visible;
+      z-index: 1;
+    }
+    .hero-network .nerves-substrate line {
+      stroke: oklch(87% 0.035 205);
+      stroke-width: 1;
+      opacity: .24;
+      fill: none;
+    }
+    .hero-network .nerves-firing line {
+      stroke: oklch(83% 0.105 205);
+      stroke-width: 2.4;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 12 245;
+      animation: heroNerveFire 3.8s linear infinite;
+    }
+    .hero-network .nerves-firing line:nth-child(2n) { animation-delay: .8s; }
+    .hero-network .nerves-firing line:nth-child(3n) { animation-delay: 1.5s; }
+    .hero-network .neuron-input,
+    .hero-network .neuron-focal {
+      fill: oklch(84% 0.105 205);
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: heroNeuronGlow 2.8s ease-in-out infinite;
+    }
+    .hero-network .neuron-mid { fill: oklch(91% 0.028 210); opacity: .9; }
+    .hero-network .halo-ring {
+      fill: none;
+      stroke: oklch(83% 0.105 205);
+      stroke-width: 2;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: heroHaloPulse 3.6s ease-out infinite;
+    }
+    .hero-network .halo-ring.h-2 { animation-delay: 1.2s; }
+    .hero-network .halo-ring.h-3 { animation-delay: 2.4s; }
+    @keyframes heroNerveFire {
+      0% { stroke-dashoffset: 245; opacity: 0; }
+      10% { opacity: 1; }
+      88% { opacity: 1; }
+      100% { stroke-dashoffset: -12; opacity: 0; }
+    }
+    @keyframes heroNeuronGlow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+    @keyframes heroHaloPulse {
+      0% { transform: scale(.72); opacity: .78; }
+      80% { opacity: .06; }
+      100% { transform: scale(2.7); opacity: 0; }
+    }
+    .network-label {
+      position: absolute;
+      left: 18px;
+      bottom: 16px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: oklch(86% 0.055 205);
+      font: 800 10px/1 "JetBrains Mono", monospace;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .network-label::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: oklch(75% 0.13 195);
+      box-shadow: 0 0 0 5px oklch(75% 0.13 195 / .18);
+    }
     .status {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -316,12 +443,17 @@
     @media (max-width: 1100px) {
       .hero, .layout, .split { grid-template-columns: 1fr; }
       .status { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .network-panel { min-height: 280px; }
     }
     @media (max-width: 680px) {
       .shell { width: min(100% - 18px, 620px); margin-top: 8px; }
       header { position: static; }
       .controls, .status { grid-template-columns: 1fr; width: 100%; }
       select, button { width: 100%; }
+      .brand { width: 100%; }
+      .nn11 { width: 58px; }
+      .if-mark { font-size: 31px; }
+      .network-panel { min-height: 235px; }
     }
   </style>
 </head>
@@ -329,8 +461,20 @@
   <main class="shell">
     <header>
       <a class="brand" href="/">
-        <div class="mark">i</div>
-        <div class="wordmark">iFeed</div>
+        <div class="nn11" aria-hidden="true">
+          <svg viewBox="0 0 100 80" aria-label="iFeed neural network mark">
+            <g class="nerve">
+              <line x1="20" y1="20" x2="50" y2="20"/><line x1="20" y1="20" x2="50" y2="40"/><line x1="20" y1="20" x2="50" y2="60"/>
+              <line x1="20" y1="40" x2="50" y2="20"/><line x1="20" y1="40" x2="50" y2="40"/><line x1="20" y1="40" x2="50" y2="60"/>
+              <line x1="20" y1="60" x2="50" y2="20"/><line x1="20" y1="60" x2="50" y2="40"/><line x1="20" y1="60" x2="50" y2="60"/>
+              <line x1="50" y1="20" x2="80" y2="40"/><line x1="50" y1="40" x2="80" y2="40"/><line x1="50" y1="60" x2="80" y2="40"/>
+            </g>
+            <circle class="neuron-in" cx="20" cy="20" r="3.6"/><circle class="neuron-in" cx="20" cy="40" r="3.6"/><circle class="neuron-in" cx="20" cy="60" r="3.6"/>
+            <circle class="neuron-mid" cx="50" cy="20" r="3.2"/><circle class="neuron-mid" cx="50" cy="40" r="3.2"/><circle class="neuron-mid" cx="50" cy="60" r="3.2"/>
+            <circle class="halo-ring halo-a" cx="80" cy="40" r="6"/><circle class="halo-ring halo-b" cx="80" cy="40" r="7.5"/><circle class="neuron-out" cx="80" cy="40" r="4.4"/>
+          </svg>
+        </div>
+        <span class="if-mark"><span class="i">i</span>Feed</span>
       </a>
       <div class="controls">
         <select id="weekSelect" aria-label="Week">
@@ -349,14 +493,41 @@
     </header>
 
     <section class="hero">
-      <div>
+      <div class="hero-copy">
         <h1>Weekly signal <em>management system.</em></h1>
         <p>Select the week and tool, copy the prompt, paste the tool output, then export raw Markdown or structured JSON for refinement, dashboard, cockpit and final publish handoff.</p>
+        <div class="status">
+          <div class="metric"><b>Week</b><span id="metricWeek">W25</span></div>
+          <div class="metric"><b>Captured lanes</b><span id="metricCaptured">0/7</span></div>
+          <div class="metric"><b>Publish gate</b><span id="metricGate">0/6</span></div>
+        </div>
       </div>
-      <div class="status">
-        <div class="metric"><b>Week</b><span id="metricWeek">W25</span></div>
-        <div class="metric"><b>Captured lanes</b><span id="metricCaptured">0/7</span></div>
-        <div class="metric"><b>Publish gate</b><span id="metricGate">0/6</span></div>
+      <div class="network-panel" aria-label="Animated iFeed signal network">
+        <svg class="hero-network" viewBox="0 0 500 380" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <g class="nerves-substrate">
+            <line x1="54" y1="48" x2="176" y2="36"/><line x1="54" y1="48" x2="176" y2="112"/><line x1="54" y1="48" x2="176" y2="184"/><line x1="54" y1="48" x2="176" y2="258"/><line x1="54" y1="48" x2="176" y2="330"/>
+            <line x1="54" y1="118" x2="176" y2="36"/><line x1="54" y1="118" x2="176" y2="112"/><line x1="54" y1="118" x2="176" y2="184"/><line x1="54" y1="118" x2="176" y2="258"/><line x1="54" y1="118" x2="176" y2="330"/>
+            <line x1="54" y1="192" x2="176" y2="36"/><line x1="54" y1="192" x2="176" y2="112"/><line x1="54" y1="192" x2="176" y2="184"/><line x1="54" y1="192" x2="176" y2="258"/><line x1="54" y1="192" x2="176" y2="330"/>
+            <line x1="54" y1="268" x2="176" y2="36"/><line x1="54" y1="268" x2="176" y2="112"/><line x1="54" y1="268" x2="176" y2="184"/><line x1="54" y1="268" x2="176" y2="258"/><line x1="54" y1="268" x2="176" y2="330"/>
+            <line x1="54" y1="344" x2="176" y2="36"/><line x1="54" y1="344" x2="176" y2="112"/><line x1="54" y1="344" x2="176" y2="184"/><line x1="54" y1="344" x2="176" y2="258"/><line x1="54" y1="344" x2="176" y2="330"/>
+            <line x1="176" y1="36" x2="300" y2="48"/><line x1="176" y1="36" x2="300" y2="128"/><line x1="176" y1="36" x2="300" y2="192"/><line x1="176" y1="36" x2="300" y2="268"/><line x1="176" y1="36" x2="300" y2="344"/>
+            <line x1="176" y1="112" x2="300" y2="48"/><line x1="176" y1="112" x2="300" y2="128"/><line x1="176" y1="112" x2="300" y2="192"/><line x1="176" y1="112" x2="300" y2="268"/><line x1="176" y1="112" x2="300" y2="344"/>
+            <line x1="176" y1="184" x2="300" y2="48"/><line x1="176" y1="184" x2="300" y2="128"/><line x1="176" y1="184" x2="300" y2="192"/><line x1="176" y1="184" x2="300" y2="268"/><line x1="176" y1="184" x2="300" y2="344"/>
+            <line x1="176" y1="258" x2="300" y2="48"/><line x1="176" y1="258" x2="300" y2="128"/><line x1="176" y1="258" x2="300" y2="192"/><line x1="176" y1="258" x2="300" y2="268"/><line x1="176" y1="258" x2="300" y2="344"/>
+            <line x1="176" y1="330" x2="300" y2="48"/><line x1="176" y1="330" x2="300" y2="128"/><line x1="176" y1="330" x2="300" y2="192"/><line x1="176" y1="330" x2="300" y2="268"/><line x1="176" y1="330" x2="300" y2="344"/>
+            <line x1="300" y1="48" x2="426" y2="192"/><line x1="300" y1="128" x2="426" y2="192"/><line x1="300" y1="192" x2="426" y2="192"/><line x1="300" y1="268" x2="426" y2="192"/><line x1="300" y1="344" x2="426" y2="192"/>
+          </g>
+          <g class="nerves-firing">
+            <line x1="54" y1="48" x2="176" y2="36"/><line x1="54" y1="192" x2="176" y2="112"/><line x1="54" y1="344" x2="176" y2="258"/>
+            <line x1="176" y1="36" x2="300" y2="48"/><line x1="176" y1="184" x2="300" y2="192"/><line x1="176" y1="258" x2="300" y2="268"/>
+            <line x1="300" y1="48" x2="426" y2="192"/><line x1="300" y1="192" x2="426" y2="192"/><line x1="300" y1="268" x2="426" y2="192"/>
+          </g>
+          <circle class="neuron-input" cx="54" cy="48" r="11"/><circle class="neuron-input" cx="54" cy="118" r="11"/><circle class="neuron-input" cx="54" cy="192" r="11"/><circle class="neuron-input" cx="54" cy="268" r="11"/><circle class="neuron-input" cx="54" cy="344" r="11"/>
+          <circle class="neuron-mid" cx="176" cy="36" r="8"/><circle class="neuron-mid" cx="176" cy="112" r="8"/><circle class="neuron-mid" cx="176" cy="184" r="8"/><circle class="neuron-mid" cx="176" cy="258" r="8"/><circle class="neuron-mid" cx="176" cy="330" r="8"/>
+          <circle class="neuron-mid" cx="300" cy="48" r="8"/><circle class="neuron-mid" cx="300" cy="128" r="8"/><circle class="neuron-mid" cx="300" cy="192" r="8"/><circle class="neuron-mid" cx="300" cy="268" r="8"/><circle class="neuron-mid" cx="300" cy="344" r="8"/>
+          <circle class="halo-ring h-1" cx="426" cy="192" r="26"/><circle class="halo-ring h-2" cx="426" cy="192" r="36"/><circle class="halo-ring h-3" cx="426" cy="192" r="48"/><circle class="neuron-focal" cx="426" cy="192" r="16"/>
+        </svg>
+        <span class="network-label">signal intake engine</span>
       </div>
     </section>
 
