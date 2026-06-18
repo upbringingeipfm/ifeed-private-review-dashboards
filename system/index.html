@@ -214,8 +214,107 @@
       line-height: 1.45;
       margin-top: 10px;
     }
+    .progress-grid {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .lane {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+    .lane b {
+      font: 700 11px/1 "JetBrains Mono", monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .badge {
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      padding: 5px 8px;
+      color: var(--muted);
+      background: white;
+      font: 700 10px/1 "JetBrains Mono", monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .badge.done {
+      border-color: color-mix(in srgb, var(--accent) 44%, var(--rule));
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+    .workspace { display: grid; gap: 14px; }
+    .workspace[hidden] { display: none; }
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, .65fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .validator {
+      min-height: 120px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--rule);
+      background: color-mix(in srgb, var(--surface-2) 76%, white);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .validator strong {
+      display: block;
+      color: var(--ink);
+      font-family: "Source Serif 4", serif;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .checklist {
+      display: grid;
+      gap: 9px;
+    }
+    .check {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 9px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .check input { min-height: 16px; margin-top: 1px; }
+    .small-field {
+      width: 100%;
+      margin-top: 8px;
+      text-transform: none;
+      letter-spacing: 0;
+      font: 500 14px/1.2 Inter, sans-serif;
+    }
+    .example {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px dashed color-mix(in srgb, var(--accent) 34%, var(--rule));
+      background: color-mix(in srgb, var(--accent-bg) 50%, white);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .example b {
+      display: block;
+      color: var(--accent);
+      font: 700 11px/1 "JetBrains Mono", monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
     @media (max-width: 1100px) {
-      .hero, .layout { grid-template-columns: 1fr; }
+      .hero, .layout, .split { grid-template-columns: 1fr; }
       .status { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
     @media (max-width: 680px) {
@@ -256,8 +355,8 @@
       </div>
       <div class="status">
         <div class="metric"><b>Week</b><span id="metricWeek">W25</span></div>
-        <div class="metric"><b>Tool lanes</b><span>7</span></div>
-        <div class="metric"><b>Stages</b><span>6</span></div>
+        <div class="metric"><b>Captured lanes</b><span id="metricCaptured">0/7</span></div>
+        <div class="metric"><b>Publish gate</b><span id="metricGate">0/6</span></div>
       </div>
     </section>
 
@@ -271,11 +370,13 @@
           <div class="steps">
             <button class="step active" data-mode="prompt"><small>01</small>Prompt canvas</button>
             <button class="step" data-mode="raw"><small>02</small>Raw capture workspace</button>
-            <button class="step" data-mode="refine"><small>03</small>Refinement prompt</button>
-            <button class="step" data-mode="select"><small>04</small>Select 20 / final 9 prompt</button>
-            <button class="step" data-mode="cockpit"><small>05</small>Cockpit handoff prompt</button>
-            <button class="step" data-mode="publish"><small>06</small>Publish database prompt</button>
+            <button class="step" data-mode="refine"><small>03</small>Refinement intake</button>
+            <button class="step" data-mode="select"><small>04</small>Selection workspace</button>
+            <button class="step" data-mode="cockpit"><small>05</small>Cockpit handoff</button>
+            <button class="step" data-mode="publish"><small>06</small>Publish readiness</button>
           </div>
+          <div class="progress-grid" id="laneStatus"></div>
+          <p class="mini">Lane status is stored in this browser. Download files for permanent history, or let Codex commit them into the W25 folder.</p>
         </div>
       </aside>
 
@@ -285,13 +386,69 @@
           <p id="mainHelp">Copy this prompt into the selected tool. The prompt stays mostly constant; only week dates and editorial priorities change.</p>
         </div>
         <div class="panel-body">
-          <div id="promptView" class="prompt"></div>
-          <textarea id="rawInput" hidden placeholder="Paste raw tool output here..."></textarea>
+          <div id="promptWorkspace" class="workspace">
+            <div id="promptView" class="prompt"></div>
+          </div>
+
+          <div id="rawWorkspace" class="workspace" hidden>
+            <textarea id="rawInput" placeholder="Paste raw tool output here..."></textarea>
+            <div class="example"><b>Capture rule</b>Raw can be messy. Do not edit away uncertainty. Keep source URLs, dates, weak claims and tool caveats because they become the audit trail.</div>
+          </div>
+
+          <div id="refineWorkspace" class="workspace" hidden>
+            <div class="split">
+              <textarea id="refinedInput" placeholder="Paste refined-signals.json here after Codex or ChatGPT processes raw outputs..."></textarea>
+              <div>
+                <div class="validator" id="refinedValidator"><strong>Refined register check</strong>Paste JSON to validate required fields and signal count.</div>
+                <div class="example"><b>Fallback route</b>If Codex is unavailable, copy the refinement prompt, paste all raw tool outputs into ChatGPT, then paste the returned JSON here.</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="selectWorkspace" class="workspace" hidden>
+            <div class="split">
+              <textarea id="selectionInput" placeholder="Paste preliminary_20 / final_9 selection JSON here, or manually enter counts on the right..."></textarea>
+              <div>
+                <div class="validator" id="selectionValidator"><strong>Selection check</strong>Target: preliminary 20 and final 9. Paste selection JSON to check counts.</div>
+                <input class="small-field" id="manualPrelim" type="number" min="0" max="120" placeholder="Manual preliminary count" />
+                <input class="small-field" id="manualFinal" type="number" min="0" max="9" placeholder="Manual final count" />
+              </div>
+            </div>
+          </div>
+
+          <div id="cockpitWorkspace" class="workspace" hidden>
+            <div class="split">
+              <textarea id="cockpitInput" placeholder="Paste cockpit-handoff.json here..."></textarea>
+              <div>
+                <div class="validator" id="cockpitValidator"><strong>Cockpit handoff check</strong>Paste cockpit JSON to verify handoff groups exist.</div>
+                <div class="example"><b>Promotion rule</b>The cockpit is still private. It can keep watch/drop/context signals, but final publish data should contain only public-safe selected items.</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="publishWorkspace" class="workspace" hidden>
+            <div class="split">
+              <textarea id="publishInput" placeholder="Paste publish-signals.json here..."></textarea>
+              <div>
+                <div class="validator" id="publishValidator"><strong>Publish database check</strong>Target: exactly 9 public-safe signals with source URL, claim boundary, Monday move and visual content.</div>
+                <div class="checklist" id="publishChecks">
+                  <label class="check"><input type="checkbox" data-gate="sourceUrls"> Source URLs present for all final signals</label>
+                  <label class="check"><input type="checkbox" data-gate="dateWindow"> Dates checked against W25 window or explicitly justified</label>
+                  <label class="check"><input type="checkbox" data-gate="claimBoundary"> Claim boundaries written, no overclaiming</label>
+                  <label class="check"><input type="checkbox" data-gate="publicSafe"> No unwanted reputational/legal/false-impression risk</label>
+                  <label class="check"><input type="checkbox" data-gate="visualReady"> Expanded visual card content complete</label>
+                  <label class="check"><input type="checkbox" data-gate="finalNine"> Final signal count is exactly 9</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="action-row">
             <button class="primary" id="copyBtn">Copy current text</button>
             <button id="saveBtn">Save in browser</button>
             <button id="downloadMdBtn">Download raw MD</button>
             <button id="downloadJsonBtn">Download stage JSON</button>
+            <button id="downloadAllRawBtn">Export all raw</button>
           </div>
           <p class="mini" id="storageNote">Browser save uses localStorage on this device. For permanent project history, download and commit the files, or let Codex write them into the W25 folder.</p>
         </div>
@@ -309,6 +466,7 @@
             <div class="schema-card"><b>Dashboard data</b><p><code>dashboard-signals.json</code><br>Expanded cards, decision tags, filters, audit notes and private review fields.</p></div>
             <div class="schema-card"><b>Cockpit handoff</b><p><code>cockpit-handoff.json</code><br>Preliminary 20, final 9 candidates, watch, drop and reasoning.</p></div>
             <div class="schema-card"><b>Publish data</b><p><code>publish-signals.json</code><br>Only final public-safe signals, copy blocks, source URLs, visual card content and claim boundaries.</p></div>
+            <div class="schema-card"><b>What is still manual</b><p>A static Netlify page can save locally and download files. Direct Obsidian/GitHub writing still needs Codex, a local helper, or manual upload.</p></div>
           </div>
         </div>
       </aside>
@@ -458,21 +616,126 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
       publish: ["Publish database prompt", "Use this to generate the final public iFeed Weekly Signals database for the digest template."]
     };
 
+    const toolLanes = Object.keys(toolProfiles);
     const toolSelect = document.getElementById("toolSelect");
     const promptView = document.getElementById("promptView");
     const rawInput = document.getElementById("rawInput");
+    const refinedInput = document.getElementById("refinedInput");
+    const selectionInput = document.getElementById("selectionInput");
+    const cockpitInput = document.getElementById("cockpitInput");
+    const publishInput = document.getElementById("publishInput");
     const mainTitle = document.getElementById("mainTitle");
     const mainHelp = document.getElementById("mainHelp");
     const copyBtn = document.getElementById("copyBtn");
     const saveBtn = document.getElementById("saveBtn");
     const downloadMdBtn = document.getElementById("downloadMdBtn");
     const downloadJsonBtn = document.getElementById("downloadJsonBtn");
+    const downloadAllRawBtn = document.getElementById("downloadAllRawBtn");
+    const metricCaptured = document.getElementById("metricCaptured");
+    const metricGate = document.getElementById("metricGate");
+    const laneStatus = document.getElementById("laneStatus");
     let mode = "prompt";
 
     function currentText() {
       if (mode === "prompt") return capturePrompt(toolSelect.value);
       if (mode === "raw") return rawInput.value;
+      if (mode === "refine") return refinedInput.value || fallbackPrompts.refine;
+      if (mode === "select") return selectionInput.value || fallbackPrompts.select;
+      if (mode === "cockpit") return cockpitInput.value || fallbackPrompts.cockpit;
+      if (mode === "publish") return publishInput.value || fallbackPrompts.publish;
       return fallbackPrompts[mode];
+    }
+
+    function storageKey(kind, tool = toolSelect.value) {
+      return `ifeed.${week.id}.${kind}.${tool}`;
+    }
+
+    function stageKey(kind) {
+      return `ifeed.${week.id}.${kind}`;
+    }
+
+    function getRaw(tool) {
+      return localStorage.getItem(storageKey("raw", tool)) || "";
+    }
+
+    function setStatusFlash(button, text) {
+      const old = button.textContent;
+      button.textContent = text;
+      setTimeout(() => button.textContent = old, 1200);
+    }
+
+    function safeJson(value) {
+      try {
+        return [JSON.parse(value), null];
+      } catch (error) {
+        return [null, error.message];
+      }
+    }
+
+    function validateRefined(value) {
+      if (!value.trim()) return "Paste refined JSON to validate. Expected schema: ifeed-refined-signals-v1.";
+      const [data, error] = safeJson(value);
+      if (error) return `Invalid JSON: ${error}`;
+      const signals = Array.isArray(data.signals) ? data.signals : [];
+      const missing = signals.filter(s => !s.title || !s.date || !s.source_url || !s.fact).length;
+      return `Found ${signals.length} refined signals. ${missing ? `${missing} need title/date/source/fact cleanup.` : "Core fields look present."}`;
+    }
+
+    function validateSelection(value) {
+      let preliminary = Number(document.getElementById("manualPrelim").value || 0);
+      let finalNine = Number(document.getElementById("manualFinal").value || 0);
+      if (value.trim()) {
+        const [data, error] = safeJson(value);
+        if (error) return `Invalid JSON: ${error}`;
+        preliminary = Array.isArray(data.preliminary_20) ? data.preliminary_20.length : preliminary;
+        finalNine = Array.isArray(data.final_9_candidates) ? data.final_9_candidates.length : finalNine;
+      }
+      const prelimNote = preliminary === 20 ? "Preliminary 20 complete." : `Preliminary count is ${preliminary}/20.`;
+      const finalNote = finalNine === 9 ? "Final 9 complete." : `Final count is ${finalNine}/9.`;
+      return `${prelimNote} ${finalNote}`;
+    }
+
+    function validateCockpit(value) {
+      if (!value.trim()) return "Paste cockpit handoff JSON to validate.";
+      const [data, error] = safeJson(value);
+      if (error) return `Invalid JSON: ${error}`;
+      const groups = ["preliminary_20", "final_9_candidates", "watch", "drop"];
+      const present = groups.filter(group => Array.isArray(data[group])).length;
+      return `Cockpit groups present: ${present}/4. ${present === 4 ? "Ready for private review routing." : "Missing one or more handoff arrays."}`;
+    }
+
+    function validatePublish(value) {
+      if (!value.trim()) return "Paste publish-signals.json to validate final public issue data.";
+      const [data, error] = safeJson(value);
+      if (error) return `Invalid JSON: ${error}`;
+      const signals = Array.isArray(data.signals) ? data.signals : [];
+      const missing = signals.filter(s => !s.source_url || !s.claim_boundary || !s.monday_move).length;
+      return `Publish signals: ${signals.length}/9. ${missing ? `${missing} missing source URL, claim boundary or Monday move.` : "Core public-safety fields look present."}`;
+    }
+
+    function updateValidators() {
+      document.getElementById("refinedValidator").innerHTML = `<strong>Refined register check</strong>${validateRefined(refinedInput.value)}`;
+      document.getElementById("selectionValidator").innerHTML = `<strong>Selection check</strong>${validateSelection(selectionInput.value)}`;
+      document.getElementById("cockpitValidator").innerHTML = `<strong>Cockpit handoff check</strong>${validateCockpit(cockpitInput.value)}`;
+      document.getElementById("publishValidator").innerHTML = `<strong>Publish database check</strong>${validatePublish(publishInput.value)}`;
+      const checked = document.querySelectorAll("#publishChecks input:checked").length;
+      metricGate.textContent = `${checked}/6`;
+    }
+
+    function renderLaneStatus() {
+      laneStatus.innerHTML = toolLanes.map(tool => {
+        const hasRaw = getRaw(tool).trim().length > 0;
+        return `<div class="lane"><b>${tool}</b><span class="badge ${hasRaw ? "done" : ""}">${hasRaw ? "captured" : "open"}</span></div>`;
+      }).join("");
+      const captured = toolLanes.filter(tool => getRaw(tool).trim().length > 0).length;
+      metricCaptured.textContent = `${captured}/${toolLanes.length}`;
+    }
+
+    function showWorkspace() {
+      ["prompt", "raw", "refine", "select", "cockpit", "publish"].forEach(name => {
+        const node = document.getElementById(`${name}Workspace`);
+        if (node) node.hidden = name !== mode;
+      });
     }
 
     function render() {
@@ -480,11 +743,12 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
       mainTitle.textContent = title;
       mainHelp.textContent = help;
       document.querySelectorAll(".step").forEach(btn => btn.classList.toggle("active", btn.dataset.mode === mode));
-      rawInput.hidden = mode !== "raw";
-      promptView.hidden = mode === "raw";
-      promptView.textContent = mode === "prompt" ? capturePrompt(toolSelect.value) : fallbackPrompts[mode];
-      const saved = localStorage.getItem(`ifeed.${week.id}.${toolSelect.value}.raw`);
+      showWorkspace();
+      promptView.textContent = mode === "prompt" ? capturePrompt(toolSelect.value) : (fallbackPrompts[mode] || "");
+      const saved = getRaw(toolSelect.value);
       if (mode === "raw" && !rawInput.value && saved) rawInput.value = saved;
+      renderLaneStatus();
+      updateValidators();
     }
 
     function download(filename, content, type = "text/plain") {
@@ -507,20 +771,23 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
     });
 
     toolSelect.addEventListener("change", () => {
-      rawInput.value = localStorage.getItem(`ifeed.${week.id}.${toolSelect.value}.raw`) || "";
+      rawInput.value = getRaw(toolSelect.value);
       render();
     });
 
     copyBtn.addEventListener("click", async () => {
       await navigator.clipboard.writeText(currentText());
-      copyBtn.textContent = "Copied";
-      setTimeout(() => copyBtn.textContent = "Copy current text", 1200);
+      setStatusFlash(copyBtn, "Copied");
     });
 
     saveBtn.addEventListener("click", () => {
-      if (mode === "raw") localStorage.setItem(`ifeed.${week.id}.${toolSelect.value}.raw`, rawInput.value);
-      saveBtn.textContent = "Saved";
-      setTimeout(() => saveBtn.textContent = "Save in browser", 1200);
+      if (mode === "raw") localStorage.setItem(storageKey("raw"), rawInput.value);
+      if (mode === "refine") localStorage.setItem(stageKey("refined"), refinedInput.value);
+      if (mode === "select") localStorage.setItem(stageKey("selection"), selectionInput.value);
+      if (mode === "cockpit") localStorage.setItem(stageKey("cockpit"), cockpitInput.value);
+      if (mode === "publish") localStorage.setItem(stageKey("publish"), publishInput.value);
+      render();
+      setStatusFlash(saveBtn, "Saved");
     });
 
     downloadMdBtn.addEventListener("click", () => {
@@ -540,6 +807,41 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
       };
       download(`${week.id}_${mode}_${tool}.json`, JSON.stringify(payload, null, 2), "application/json");
     });
+
+    downloadAllRawBtn.addEventListener("click", () => {
+      const payload = {
+        week: week.id,
+        coverage_start: week.start,
+        coverage_end: week.end,
+        exported_at: new Date().toISOString(),
+        raw_outputs: Object.fromEntries(toolLanes.map(tool => [tool, getRaw(tool)]))
+      };
+      download(`${week.id}_all_raw_outputs.json`, JSON.stringify(payload, null, 2), "application/json");
+    });
+
+    rawInput.addEventListener("input", () => {
+      localStorage.setItem(storageKey("raw"), rawInput.value);
+      renderLaneStatus();
+    });
+
+    refinedInput.addEventListener("input", updateValidators);
+    selectionInput.addEventListener("input", updateValidators);
+    cockpitInput.addEventListener("input", updateValidators);
+    publishInput.addEventListener("input", updateValidators);
+    document.getElementById("manualPrelim").addEventListener("input", updateValidators);
+    document.getElementById("manualFinal").addEventListener("input", updateValidators);
+    document.querySelectorAll("#publishChecks input").forEach(input => {
+      input.addEventListener("change", () => {
+        localStorage.setItem(stageKey(`gate.${input.dataset.gate}`), input.checked ? "1" : "0");
+        updateValidators();
+      });
+      input.checked = localStorage.getItem(stageKey(`gate.${input.dataset.gate}`)) === "1";
+    });
+
+    refinedInput.value = localStorage.getItem(stageKey("refined")) || "";
+    selectionInput.value = localStorage.getItem(stageKey("selection")) || "";
+    cockpitInput.value = localStorage.getItem(stageKey("cockpit")) || "";
+    publishInput.value = localStorage.getItem(stageKey("publish")) || "";
 
     render();
   </script>
