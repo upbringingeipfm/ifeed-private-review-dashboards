@@ -37,6 +37,17 @@ This folder is the working system for weekly signal capture and conversion.
 10. Promote selected signals into cockpit handoff.
 11. Generate final publish database for the iFeed Weekly Signals template.
 
+## Console Features
+
+- Tool-lane capture status for all seven lanes.
+- Browser-local raw capture storage.
+- Export one raw Markdown file at a time.
+- Export all raw outputs as one JSON bundle.
+- Refined-register JSON intake and validation.
+- Preliminary 20 / final 9 selection count check.
+- Cockpit-handoff JSON intake and group check.
+- Publish-readiness checklist for source URLs, date fit, claim boundaries, public safety, visual content, and final count.
+
 ## Browser Limitation
 
 A static Netlify page cannot silently write into a local Obsidian vault or GitHub repository. It can:
