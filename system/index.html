@@ -460,7 +460,7 @@
 <body>
   <main class="shell">
     <header>
-      <a class="brand" href="/">
+      <a class="brand" href="../index.html">
         <div class="nn11" aria-hidden="true">
           <svg viewBox="0 0 100 80" aria-label="iFeed neural network mark">
             <g class="nerve">
@@ -617,11 +617,13 @@
           <div class="action-row">
             <button class="primary" id="copyBtn">Copy current text</button>
             <button id="saveBtn">Save in browser</button>
+            <button id="writeRawBtn">Write raw file</button>
+            <button id="writeAllRawBtn">Write all raw files</button>
             <button id="downloadMdBtn">Download raw MD</button>
             <button id="downloadJsonBtn">Download stage JSON</button>
             <button id="downloadAllRawBtn">Export all raw</button>
           </div>
-          <p class="mini" id="storageNote">Browser save uses localStorage on this device. For permanent project history, download and commit the files, or let Codex write them into the W25 folder.</p>
+          <p class="mini" id="storageNote">Browser save uses localStorage. If the local writer is running, “Write raw file” creates the Markdown file in the W25 project folder and the W25 Obsidian workspace.</p>
         </div>
       </section>
 
@@ -637,7 +639,7 @@
             <div class="schema-card"><b>Dashboard data</b><p><code>dashboard-signals.json</code><br>Expanded cards, decision tags, filters, audit notes and private review fields.</p></div>
             <div class="schema-card"><b>Cockpit handoff</b><p><code>cockpit-handoff.json</code><br>Preliminary 20, final 9 candidates, watch, drop and reasoning.</p></div>
             <div class="schema-card"><b>Publish data</b><p><code>publish-signals.json</code><br>Only final public-safe signals, copy blocks, source URLs, visual card content and claim boundaries.</p></div>
-            <div class="schema-card"><b>What is still manual</b><p>A static Netlify page can save locally and download files. Direct Obsidian/GitHub writing still needs Codex, a local helper, or manual upload.</p></div>
+            <div class="schema-card"><b>Local write mode</b><p>Run <code>local_signal_writer.py</code>, then paste tool output and click <b>Write raw file</b>. The CMS creates <code>/weeks/w25/raw/{tool}_output.md</code> and an Obsidian copy under <code>08 Weekly Signal Management/W25/01 Raw Captures</code>.</p></div>
           </div>
         </div>
       </aside>
@@ -677,10 +679,31 @@
 Tool role: ${tool.toUpperCase()}
 ${toolProfiles[tool]}
 
+Role:
+Act as a source-backed signal scout and strict editorial reviewer. Do not write a newsletter yet. Build the raw signal evidence layer that will later be verified, refined, ranked, and converted into a private dashboard, cockpit handoff, and final iFeed Weekly issue.
+
 Objective:
 Find source-backed signals that matter to healthcare operators, QMS/quality leaders, regulatory/evidence teams, clinical/AI teams, medtech, pharma, life-sciences strategy and market-access decision-makers.
 
-Do not optimize for volume at the final stage. At this capture stage, scan broadly and do not prematurely limit useful signals. Separate globally important items from Ireland/India ecosystem items unless globally relevant.
+Capture posture:
+- Do not optimize for final volume at this stage.
+- Scan broadly and do not prematurely limit useful signals.
+- Do not invent sources, dates, regulatory meaning, approvals, or market impact.
+- Separate globally important items from Ireland/India ecosystem items unless globally relevant.
+- Include negative, cautionary, infrastructure, governance, evidence, quality, and operational signals, not only product launches or AI announcements.
+- If results are thin, say so and return a search coverage log rather than padding.
+
+Date rule:
+- Prioritize ${week.start} to ${week.end}.
+- Include late prior-week items only if they became strategically relevant during W25.
+- Include older foundational items only if they directly shape 2026 operating readiness, inspection readiness, regulatory compliance, evidence planning, AI governance, or market access.
+- Every candidate must include a concrete date and a note on whether it is in-window, late-carryover, or foundational/context.
+
+Source hierarchy:
+1. Primary: regulator, agency, standards body, official company release, clinical-trial registry, journal article, official court/legal/payer/HTA source.
+2. Near-primary: conference abstract, official event material, verified partner announcement, official institutional page.
+3. High-quality secondary: reputable trade press, expert newsletter, analyst note, credible LinkedIn expert post with source trail.
+4. Secondary/unclear: include only if useful for discovery and mark verification risk clearly.
 
 ${baseLens}
 
@@ -698,16 +721,31 @@ Search scope:
 - Evidence/access: HTA, RWE, reimbursement, clinical trials, registries, market access.
 - Ecosystem: launches, partnerships, funding, research, journals, expert newsletters, credible LinkedIn expert signals.
 
-Return raw candidate signals with:
-Title | Date | Source URL | Source type | Domain | One-sentence fact | Why it matters | Suggested placement | Confidence 1-5 | Notes on verification risk.
+Return raw candidate signals in this table:
+Title | Date | Window status | Source URL | Source type | Domain | Seven-layer tags | One-sentence fact | Why it matters | Suggested placement | Confidence 1-5 | Verification risk | Duplicate/related items
 
-Flag duplicates, late-May/older foundational items, and any item that needs careful claim-boundary language.`;
+Then add:
+1. Search coverage log: sources/queries checked and any blind spots.
+2. Missed-signal watchlist: items that might matter but need better sourcing.
+3. Drop/noise notes: items rejected and why.
+
+Flag duplicates, prior-week/foundational items, and any item that needs careful claim-boundary language.`;
     }
 
     const fallbackPrompts = {
       refine: `You are the fallback refinement engine for iFeed Weekly Signals ${week.id.toUpperCase()}.
 
-I will paste raw outputs from one or more tools. Convert them into a structured refined signal register. Do not invent sources or dates. If a source/date is unclear, mark verification_status as "needs verification".
+I will paste raw outputs from one or more tools. Convert them into a structured refined signal register.
+
+Processing rules:
+- Preserve every potentially relevant signal; do not drop weak items silently.
+- Deduplicate repeated signals across tools, but keep origin_tools and explain duplicate relationships.
+- Do not invent sources, dates, regulatory meaning, approvals, impact, or certainty.
+- If a source/date is unclear, mark verification_status as "needs verification".
+- If a source is secondary but useful for discovery, keep it and mark source risk.
+- Separate Ireland/India ecosystem items unless globally important.
+- Mark prior-week/foundational items clearly.
+- Keep dropped/noise items only if they help explain why they should not enter the dashboard.
 
 Output valid JSON only:
 {
@@ -740,9 +778,23 @@ Output valid JSON only:
       "suggested_placement": "selected_candidate | alternative | watch | context | ireland_india | drop",
       "confidence": 1
     }
-  ]
+  ],
+  "coverage_notes": {
+    "tools_included": [],
+    "known_blind_spots": [],
+    "verification_priorities": [],
+    "dedupe_notes": []
+  }
 }`,
       select: `You are the strict iFeed W25 editor. From the refined signal register, select the preliminary best 20 and recommend a final 9 candidate set.
+
+Selection rules:
+- Do not select only because a signal is new or loud.
+- Prefer source-backed, decision-relevant, operationally useful signals.
+- Keep AI, QMS/quality, regulatory/evidence, clinical trials, medtech, pharma, and market-access balance.
+- Penalize weak secondary sourcing, unclear dates, overhyped AI claims, and items that create reputational or legal risk.
+- Do not remove useful context; place it in watch/context if it is not final-9 quality.
+- State claim boundaries for every final-9 candidate.
 
 Judge by:
 1. Decision relevance for healthcare/life-sciences operators.
@@ -758,12 +810,26 @@ Return JSON:
   "preliminary_20": [{"signal_id": "", "rank": 1, "why": "", "risk": ""}],
   "final_9_candidates": [{"signal_id": "", "slot": 1, "story_angle": "", "why_this_delivers_value": "", "claim_boundary": ""}],
   "watch": [],
-  "drop": []
+  "drop": [],
+  "editorial_balance": {
+    "ai_governance": 0,
+    "qms_quality": 0,
+    "regulatory_evidence": 0,
+    "clinical_trials": 0,
+    "medtech_market_access": 0,
+    "ecosystem_context": 0
+  },
+  "open_verification_questions": []
 }`,
       cockpit: `Convert the selected W25 refined register into a cockpit-friendly database.
 
+Purpose:
+This is not public copy. It is a private operating view for reviewing the week, seeing what was selected or dropped, and preserving source/claim-risk reasoning.
+
 For every signal include:
-id, title, date, source_url, domain_group, reader_group, decision_status, source_audit, evidence_posture, why_it_matters, editorial_use, duplicate/prior coverage, confidence, and notes.
+id, title, date, source_url, source_type, origin_tools, domain_group, reader_group, decision_status, source_audit, evidence_posture, why_it_matters, editorial_use, duplicate/prior coverage, confidence, verification_status, placement, and notes.
+
+Also include dashboard_filters, selection_summary, verification_backlog, and dropped_noise_summary.
 
 Return valid JSON using schema_version "ifeed-cockpit-handoff-v1".`,
       publish: `Create the W25 public iFeed Weekly Signals publish database from the final 9.
@@ -774,8 +840,13 @@ Rules:
 - Make every signal a useful story, not random news.
 - Each signal needs: headline, short story, what happened, why it matters, claim boundary, Monday move, source label, source URL, date, right-side visual card content, and screenshot-safe expanded card text.
 - Separate private review reasoning from public copy.
+- Avoid naming weak secondary claims as confirmed fact.
+- Use "reported", "announced", "published", "opened", "proposed", or "asked for comment" only when the source supports that verb.
+- If a signal is regulatory guidance, do not imply approval.
+- If a signal is AI model/tool news, distinguish access, validation, deployment, qualification, and regulatory acceptance.
+- Each public story should teach the reader something practical.
 
-Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
+Return valid JSON using schema_version "ifeed-weekly-publish-v1" with issue metadata, final 9 signals, homepage card summary, expanded card content, right-side visual card content, source list, and public claim-boundary notes.`
     };
 
     const modeMeta = {
@@ -799,13 +870,17 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
     const mainHelp = document.getElementById("mainHelp");
     const copyBtn = document.getElementById("copyBtn");
     const saveBtn = document.getElementById("saveBtn");
+    const writeRawBtn = document.getElementById("writeRawBtn");
+    const writeAllRawBtn = document.getElementById("writeAllRawBtn");
     const downloadMdBtn = document.getElementById("downloadMdBtn");
     const downloadJsonBtn = document.getElementById("downloadJsonBtn");
     const downloadAllRawBtn = document.getElementById("downloadAllRawBtn");
     const metricCaptured = document.getElementById("metricCaptured");
     const metricGate = document.getElementById("metricGate");
     const laneStatus = document.getElementById("laneStatus");
+    const storageNote = document.getElementById("storageNote");
     let mode = "prompt";
+    const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8793" : "";
 
     function currentText() {
       if (mode === "prompt") return capturePrompt(toolSelect.value);
@@ -934,6 +1009,19 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
       URL.revokeObjectURL(url);
     }
 
+    async function postJson(path, payload) {
+      const response = await fetch(`${apiBase}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || `Local writer returned ${response.status}`);
+      }
+      return data;
+    }
+
     document.querySelectorAll(".step").forEach(btn => {
       btn.addEventListener("click", () => {
         mode = btn.dataset.mode;
@@ -959,6 +1047,37 @@ Return valid JSON using schema_version "ifeed-weekly-publish-v1".`
       if (mode === "publish") localStorage.setItem(stageKey("publish"), publishInput.value);
       render();
       setStatusFlash(saveBtn, "Saved");
+    });
+
+    writeRawBtn.addEventListener("click", async () => {
+      try {
+        const tool = toolSelect.value;
+        const body = rawInput.value.trim() || getRaw(tool).trim();
+        if (!body) throw new Error("Paste raw output before writing");
+        localStorage.setItem(storageKey("raw", tool), body);
+        const result = await postJson("/api/write-raw", { week: week.id, tool, content: body });
+        storageNote.textContent = `Wrote ${tool}_output.md to project raw folder and Obsidian: ${result.obsidian_path || result.path}`;
+        setStatusFlash(writeRawBtn, "Written");
+        render();
+      } catch (error) {
+        storageNote.textContent = `Local write failed: ${error.message}. Run local_signal_writer.py and open http://127.0.0.1:8793/system/.`;
+        setStatusFlash(writeRawBtn, "Failed");
+      }
+    });
+
+    writeAllRawBtn.addEventListener("click", async () => {
+      try {
+        const currentTool = toolSelect.value;
+        if (rawInput.value.trim()) localStorage.setItem(storageKey("raw", currentTool), rawInput.value.trim());
+        const outputs = Object.fromEntries(toolLanes.map(tool => [tool, getRaw(tool)]));
+        const result = await postJson("/api/write-all-raw", { week: week.id, outputs });
+        storageNote.textContent = `Wrote ${result.written.length} raw files into project raw folder and Obsidian W25 workspace.`;
+        setStatusFlash(writeAllRawBtn, "Written");
+        render();
+      } catch (error) {
+        storageNote.textContent = `Batch write failed: ${error.message}. Run local_signal_writer.py and open http://127.0.0.1:8793/system/.`;
+        setStatusFlash(writeAllRawBtn, "Failed");
+      }
     });
 
     downloadMdBtn.addEventListener("click", () => {

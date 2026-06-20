@@ -8,6 +8,14 @@ From the refined signal register, select:
 - watch/context items
 - dropped/noise items
 
+Selection rules:
+- Do not select only because a signal is new or loud.
+- Prefer source-backed, decision-relevant, operationally useful signals.
+- Keep AI, QMS/quality, regulatory/evidence, clinical trials, medtech, pharma, and market-access balance.
+- Penalize weak secondary sourcing, unclear dates, overhyped AI claims, and items that create reputational or legal risk.
+- Do not remove useful context; place it in watch/context if it is not final-9 quality.
+- State claim boundaries for every final-9 candidate.
+
 Judge by:
 1. Decision relevance for healthcare/life-sciences operators.
 2. Source strength and date fit.
@@ -39,6 +47,15 @@ Return valid JSON only:
     }
   ],
   "watch": [],
-  "drop": []
+  "drop": [],
+  "editorial_balance": {
+    "ai_governance": 0,
+    "qms_quality": 0,
+    "regulatory_evidence": 0,
+    "clinical_trials": 0,
+    "medtech_market_access": 0,
+    "ecosystem_context": 0
+  },
+  "open_verification_questions": []
 }
 ```

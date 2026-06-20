@@ -1,4 +1,35 @@
 {
-  "week": "w25",
-  "captures": []
+  "week": "W25",
+  "coverageWindow": "2026-06-15 to 2026-06-21",
+  "updated": "2026-06-19T23:59:23",
+  "tools": {
+    "chatgpt": {
+      "path": "weeks/w25/raw/chatgpt_output.md",
+      "signalsExtracted": 22
+    },
+    "claude": {
+      "path": "weeks/w25/raw/claude_output.md",
+      "signalsExtracted": 18
+    },
+    "codex": {
+      "path": "weeks/w25/raw/codex_output.md",
+      "signalsExtracted": 14
+    },
+    "deepseek": {
+      "path": "weeks/w25/raw/deepseek_output.md",
+      "signalsExtracted": 17
+    },
+    "gemini": {
+      "path": "weeks/w25/raw/gemini_output.md",
+      "signalsExtracted": 8
+    },
+    "perplexity": {
+      "path": "weeks/w25/raw/perplexity_output.md",
+      "signalsExtracted": 9
+    },
+    "miscellaneous": {
+      "path": "weeks/w25/raw/miscellaneous_output.md",
+      "signalsExtracted": 0
+    }
+  }
 }
